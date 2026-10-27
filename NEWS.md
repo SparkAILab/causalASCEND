@@ -1,3 +1,7 @@
+# causalASCEND 0.99.2
+
+* README wording.
+
 # causalASCEND 0.99.1
 
 * `SummarizedExperiment` is now imported (Bioconductor dependency).
