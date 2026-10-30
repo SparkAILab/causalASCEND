@@ -89,7 +89,9 @@
 }
 
 ## Tally R1/R2 (de)activation witnesses for the pair (xi, xj) given the
-## guarded set S and return the votes after resolving conflicts.
+## guarded set S and return the votes after resolving conflicts. The
+## attribute "r2both" is TRUE when there is no R1 vote and R2 votes point
+## both ways, i.e. xi is not after xj and xj is not after xi.
 .witnessVotes <- function(xi, xj, S, C, n, alpha, ci) {
     votes <- c(r1 = 0L, r1r = 0L, r2 = 0L, r2r = 0L)
     evid <- c(r1 = 0, r1r = 0, r2 = 0, r2r = 0)
@@ -117,6 +119,8 @@
             evid["r2r"] <- evid["r2r"] - log(pjI + 1e-300)
         }
     }
+    r2both <- votes["r1"] == 0 && votes["r1r"] == 0 &&
+        votes["r2"] > 0 && votes["r2r"] > 0
     ## opposite directions: keep the one with stronger aggregate evidence
     for (pr in list(c("r1", "r1r"), c("r2", "r2r"))) {
         a <- pr[1]
@@ -129,7 +133,7 @@
     }
     if (votes["r1"] > 0) votes["r2"] <- 0L          # strict supersedes weak
     if (votes["r1r"] > 0) votes["r2r"] <- 0L
-    votes
+    structure(votes, r2both = unname(r2both))
 }
 
 ## The ASCEND algorithm on a correlation matrix C (n samples) whose
@@ -181,6 +185,8 @@
     M <- matrix(NA_real_, dX, dX, dimnames = dn)
     Pp <- matrix(NA_real_, dX, dX, dimnames = dn)
     lastPool <- zPool
+    ## pairs holding only an R2 verdict stay open and are tested again
+    open <- matrix(FALSE, dX, dX)
     ## provenance of each pair: rule, sweep and number of agreeing witnesses
     prov <- new.env(parent = emptyenv())
     prov$rule <- matrix(NA_character_, dX, dX, dimnames = dn)
@@ -234,7 +240,7 @@
         for (r in seq_len(nrow(lowerPairs))) {
             i <- lowerPairs[r, "row"]
             j <- lowerPairs[r, "col"]
-            if (!is.na(M[i, j])) next
+            if (!is.na(M[i, j]) && !open[i, j]) next
             S <- buildS(i, j, M)
             pv <- ci(xlabs[i], xlabs[j], S, C, n, kind = "pair")
             if (is.na(pv)) {
@@ -254,13 +260,36 @@
             if (adj[idx] > alpha) {                   # R3: unrelated
                 M[i, j] <- 0
                 M[j, i] <- 0
+                open[i, j] <- open[j, i] <- FALSE
                 mark(i, j, "R3", iter)
                 converged <- FALSE
                 next
             }
             if (!length(S)) next
             votes <- .witnessVotes(xlabs[i], xlabs[j], S, C, n, alpha, ci)
+            ## R2 both ways: xi not after xj and xj not after xi, so unrelated
+            if (attr(votes, "r2both")) {
+                M[i, j] <- 0
+                M[j, i] <- 0
+                open[i, j] <- open[j, i] <- FALSE
+                mark(i, j, "symmetry", iter)
+                converged <- FALSE
+                next
+            }
             if (max(votes) < minVotes) next
+            ## an open R2 pair: an R1 vote may sharpen it; an R2 vote the
+            ## other way makes the pair unrelated; otherwise it stays as is
+            if (open[i, j] && votes["r1"] == 0 && votes["r1r"] == 0) {
+                opp <- if (M[i, j] == 0.5) votes["r2r"] else votes["r2"]
+                if (opp >= minVotes) {
+                    M[i, j] <- 0
+                    M[j, i] <- 0
+                    open[i, j] <- open[j, i] <- FALSE
+                    mark(i, j, "symmetry", iter)
+                    converged <- FALSE
+                }
+                next
+            }
             res <- NULL
             rule <- NA_character_
             nv <- NA_integer_
@@ -287,6 +316,7 @@
             }
             if (!is.null(res) && res$ok) {
                 M <- res$M
+                open[i, j] <- open[j, i] <- rule == "R2"
                 mark(i, j, rule, iter, nv)
                 converged <- FALSE
             }
@@ -303,6 +333,7 @@
                         r <- .tryEdge(M, a, b, 1, 0)
                         if (r$ok) {
                             M <- r$M
+                            open[a, b] <- open[b, a] <- FALSE
                             mark(a, b, "transitivity", iter)
                             done <- FALSE
                             converged <- FALSE

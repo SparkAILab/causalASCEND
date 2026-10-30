@@ -1,3 +1,8 @@
+# causalASCEND 0.99.3
+
+* Pairs holding only an R2 (non-descendant) relation are tested again in
+  later sweeps; R2 in both directions makes a pair unrelated (symmetry).
+
 # causalASCEND 0.99.2
 
 * README wording.

@@ -21,8 +21,11 @@ NULL
 #' with background or already ordered foreground variables as witnesses:
 #' R1 (deactivation) gives an ancestor relation, R2 (activation) a
 #' non-descendant relation and R3 (conditional independence) an
-#' "unrelated" call. Relations are then closed transitively, the nearest
-#' ancestors are re-learned and the sweep repeats until nothing changes.
+#' "unrelated" call. A pair holding only a non-descendant relation is
+#' tested again in later sweeps, and if R2 also holds in the other direction
+#' the pair is called unrelated (symmetry). Relations are then closed
+#' transitively, the nearest ancestors are re-learned and the sweep repeats
+#' until nothing changes.
 #'
 #' @param background Background (upstream) data: a numeric matrix or
 #'   data frame with features in rows and samples in columns, or a

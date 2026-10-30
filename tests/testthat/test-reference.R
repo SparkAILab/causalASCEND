@@ -1,8 +1,9 @@
-## The package must return exactly what the implementation used for the
-## paper returned. The fixture holds that implementation's output on four
-## simulated data sets (generated with the paper's code, R/ascend.R of
-## https://github.com/SparkAILab/Ascend).
-test_that("ascend() reproduces the reference implementation", {
+## Regression test against stored output. The fixture holds the output of
+## ascend() 0.99.3 on four simulated data sets. Up to 0.99.2 the package
+## returned exactly what the paper's code returned (R/ascend.R of
+## https://github.com/SparkAILab/Ascend); 0.99.3 also re-tests pairs that
+## hold only an R2 relation, as in the paper's Algorithm 1.
+test_that("ascend() reproduces the stored reference output", {
     ref <- readRDS(test_path("fixtures", "reference_results.rds"))
     for (r in ref) {
         a <- r$args

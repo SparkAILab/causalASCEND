@@ -72,8 +72,11 @@ Each pair of foreground variables is resolved by one of three rules,
 with background or already ordered foreground variables as witnesses:
 R1 (deactivation) gives an ancestor relation, R2 (activation) a
 non-descendant relation and R3 (conditional independence) an
-"unrelated" call. Relations are then closed transitively, the nearest
-ancestors are re-learned and the sweep repeats until nothing changes.
+"unrelated" call. A pair holding only a non-descendant relation is
+tested again in later sweeps, and if R2 also holds in the other direction
+the pair is called unrelated (symmetry). Relations are then closed
+transitively, the nearest ancestors are re-learned and the sweep repeats
+until nothing changes.
 }
 \examples{
 set.seed(123)
