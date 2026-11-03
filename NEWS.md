@@ -1,3 +1,7 @@
+# causalASCEND 0.99.4
+
+* Removed a stray copy of the package from a subfolder.
+
 # causalASCEND 0.99.3
 
 * Pairs holding only an R2 (non-descendant) relation are tested again in
