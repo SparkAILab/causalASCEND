@@ -51,6 +51,27 @@ Its tests are Fisher-z partial-correlation tests, so it targets linear
 relations. Background variables that were not measured act as hidden
 confounders and lower its accuracy.
 
+## Relation to other Bioconductor packages
+
+causalASCEND works directly on Bioconductor data containers. `ascend()`
+accepts a `SummarizedExperiment` for each layer, and `ascendMultiAssay()`
+takes a `MultiAssayExperiment` and the names of its background and
+foreground experiments, matching samples across them. Results are
+returned as an S4 `AscendResult` object, whose accessors give the
+ancestral relation as a matrix or an edge list, so it can be passed to
+graph and network packages for further analysis.
+
+Bioconductor already offers gene regulatory network inference, for
+example `r BiocStyle::Biocpkg("GENIE3")` (tree-based regulator-to-target scores) and
+`r BiocStyle::Biocpkg("minet")` (mutual-information networks such as ARACNE, CLR and
+MRNET), and causal reasoning over a known network with
+`r BiocStyle::Biocpkg("CausalR")`. causalASCEND differs from these in two ways. It
+estimates causal *ancestry* (whether one gene acts upstream of another,
+directly or through intermediates) rather than association scores or
+direct edges, and it uses a second, upstream data layer, such as
+genotypes, to orient those relations. Unlike `r BiocStyle::Biocpkg("CausalR")`, it
+needs no prior network.
+
 # Installation
 
 ```{r install, eval = FALSE}

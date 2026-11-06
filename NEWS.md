@@ -1,3 +1,7 @@
+# causalASCEND 0.99.5
+
+* Vignette: how the package fits into Bioconductor and how it differs from related packages.
+
 # causalASCEND 0.99.4
 
 * Removed a stray copy of the package from a subfolder.
